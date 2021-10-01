@@ -53,8 +53,8 @@ namespace Tensile
             struct RangeGenerator;
 
             template <typename Float>
-            struct IsZero<Float, std::enable_if_t<
-                      std::is_floating_point_v<std::decay_t<ElementType>>>
+                struct IsZero < Float,
+                std::enable_if_t<std::is_floating_point_v<std::decay_t<ElementType>>>
             {
                 bool operator()(Float v) const noexcept
                 {
@@ -63,12 +63,11 @@ namespace Tensile
             };
 
             template <typename ElementType>
-            struct RangeGenerator<ElementType, std::enable_if_t<
-                std::is_floating_point_v<std::decay_t<ElementType>>>
+                struct RangeGenerator < ElementType,
+                std::enable_if_t<std::is_floating_point_v<std::decay_t<ElementType>>>
             {
                 template <typename ElementFactory>
-                static std::vector<ElementType>
-                    make(size_t m, ElementFactory&& elem_factory)
+                static std::vector<ElementType> make(size_t m, ElementFactory&& elem_factory)
                 {
                     static std::vector<ElementType> holder;
                     if(m > holder.size())
@@ -83,7 +82,7 @@ namespace Tensile
                         std::swap(holder_next, holder);
                     }
 
-                    return std::vector<ElementType>{ holder.cbegin(), holder.cbegin() + m };
+                    return std::vector<ElementType>{holder.cbegin(), holder.cbegin() + m};
                 }
             };
 
@@ -271,8 +270,8 @@ namespace Tensile
             template <typename T>
             void initArray(InitMode mode, T* array, size_t elements)
             {
-                Tensile::Client::WorkflowLogAppendLine(concatenate(
-                    "1:initArray(", std::to_string(mode), "),size=" + std::to_string(elements)));
+                Log::WorkflowLogAppendLine(
+                    "1:initArray(", std::to_string(mode), "),size=" + std::to_string(elements));
 
                 switch(mode)
                 {
@@ -322,8 +321,8 @@ namespace Tensile
             template <typename T>
             void initArray(InitMode mode, T* array, TensorDescriptor const& tensor)
             {
-                Tensile::Client::WorkflowLogAppendLine(concatenate(
-                    "2:initArray(", std::to_string(mode), " with tenzor),size=" + std::to_string(elements)));
+                Log::WorkflowLogAppendLine(
+                    "2:initArray(", std::to_string(mode), " with tenzor),size=" + std::to_string(elements));
 
                 switch(mode)
                 {
@@ -389,8 +388,8 @@ namespace Tensile
             template <typename T, InitMode Mode>
             void initArray(T* array, size_t elements)
             {
-                Tensile::Client::WorkflowLogAppendLine(concatenate(
-                    "3:initArray(", std::to_string(mode), "),size=" + std::to_string(elements)));
+                Log::WorkflowLogAppendLine(
+                    "3:initArray(", std::to_string(mode), "),size=" + std::to_string(elements));
 
                 for(size_t i = 0; i < elements; i++)
                 {
@@ -401,8 +400,8 @@ namespace Tensile
             template <typename T, InitMode Mode>
             void initArray(T* array, TensorDescriptor const& tensor)
             {
-                Tensile::Client::WorkflowLogAppendLine(concatenate(
-                    "4:initArray(", std::to_string(mode), ")" ));
+                Log::WorkflowLogAppendLine(
+                    "4:initArray(", std::to_string(mode), ")" );
 
                 size_t elements = tensor.totalAllocatedElements();
                 initArray<T, Mode>(array, elements);
