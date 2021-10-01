@@ -1,9 +1,11 @@
 #pragma once
 
+#include <utility>
 #include <string>
 #include <iostream>
+#include "Utils.hpp"
 
-namespace Tensile::Client{
+namespace Tensile::Log{
     class WorkflowReporter{
     private:
         static WorkflowReporter _Instance;
@@ -20,7 +22,8 @@ namespace Tensile::Client{
 
     WorkflowReporter WorkflowReporter::_Instance;
 
-    void WorkflowLogAppendLine(std::string text){
-        WorkflowReporter::instance().submit_line(std::move(text));
+    template<typename ...ToStrItems>
+    void WorkflowLogAppendLine(ToStrItems && ... texts){
+        WorkflowReporter::instance().submit_line(concatenate(std::forward<ToStrItems>(texts)...));
     }
 }

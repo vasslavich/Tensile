@@ -497,8 +497,8 @@ int main(int argc, const char* argv[])
    bool exitOnError      = args["exit-on-error"].as<bool>();
    bool checkResult = true;
 
-   Tensile::Client::WorkflowLogAppendLine(
-                  concatenate("gpuTimer using: ", gpuTimer ? "yew" : "system clocks", "\n"));
+   Tensile::Log::WorkflowLogAppendLine(
+                  "gpuTimer using: ", gpuTimer ? "yew" : "system clocks");
 
    if(firstSolutionIdx < 0)
        firstSolutionIdx = library->solutions.begin()->first;
@@ -520,8 +520,11 @@ int main(int argc, const char* argv[])
        = getMaxWorkspace(library, hardware, args, problems, firstProblemIdx, lastProblemIdx);
    maxWorkspaceSize = std::min(maxWorkspaceSize, maxWorkspaceSizeLimit);
 
-   Tensile::Client::WorkflowLogAppendLine(
-       concatenate("data initialization with problem factory", std::to_string(problemFactory.problems().size()), ", maxWorkspaceSize=", maxWorkspaceSize));
+   Tensile::Lot::WorkflowLogAppendLine( "data initialization with problem factory",
+        std::to_string(problemFactory.problems().size()),
+        ", maxWorkspaceSize=",
+        maxWorkspaceSize);
+
    auto dataInit = DataInitialization::Get(args, problemFactory, maxWorkspaceSize);
 
    auto solutionIterator = SolutionIterator::Default(library, hardware, args);
@@ -561,8 +564,8 @@ int main(int argc, const char* argv[])
    // ReferenceValidator validator(args, dataInit);
    // BenchmarkTimer timer(args);
 
-   Tensile::Client::WorkflowLogAppendLine(
-       concatenate("Problems factory, count=", std::to_string(problemFactory.problems().size())));
+   Tensile::Log::WorkflowLogAppendLine( "Problems factory, count=",
+        std::to_string(problemFactory.problems().size()));
 
    reporters->report(ResultKey::ProblemCount, problemFactory.problems().size());
 
@@ -598,10 +601,10 @@ int main(int argc, const char* argv[])
                    {
                        while(listeners.needMoreRunsInSolution())
                        {
-                           Tensile::Client::WorkflowLogAppendLine( "prepare input(GPU)" );
+                           Tensile::Log::WorkflowLogAppendLine( "prepare input(GPU)" );
                            auto inputs = dataInit->prepareGPUInputs(problem);
 
-                           Tensile::Client::WorkflowLogAppendLine( "solve kernels" );
+                           Tensile::Log::WorkflowLogAppendLine( "solve kernels" );
                            auto kernels = solution->solve(problem, *inputs, *hardware);
 
                            size_t       warmupInvocations = listeners.numWarmupRuns();
@@ -609,8 +612,9 @@ int main(int argc, const char* argv[])
                            TimingEvents warmupStartEvents(warmupInvocations, eventCount);
                            TimingEvents warmupStopEvents(warmupInvocations, eventCount);
 
-                           Tensile::Client::WorkflowLogAppendLine(
-                                          concatenate("Warmup invocations: ", std::to_string(warmupInvocations), "\n"));
+                           Tensile::Log::WorkflowLogAppendLine(
+                                "Warmup invocations: ",
+                                std::to_string(warmupInvocations));
 
                            for(int i = 0; i < warmupInvocations; i++)
                            {
@@ -634,7 +638,10 @@ int main(int argc, const char* argv[])
                            listeners.preSyncs();
 
                            Tensile::Client::WorkflowLogAppendLine(
-                                          concatenate("Sync invocations/enqs: ", std::to_string(syncs), "/", std::to_string(enqs), "\n"));
+                                "Sync invocations/enqs: ",
+                                std::to_string(syncs),
+                                "/",
+                                std::to_string(enqs));
 
                            for(int i = 0; i < syncs; i++)
                            {
@@ -661,15 +668,17 @@ int main(int argc, const char* argv[])
                                    const auto stopTP = std::chrono::steady_clock::now();
                                    const auto timeEnqs = std::chrono::duration_cast<std::microseconds>(startTP, stopTP);
 
-                                   Tensile::Client::WorkflowLogAppendLine( concatenate(
-                                                                        "Sync invocation #: ", std::to_string(i),
-                                                                        ", enqs: ", std::to_string(enqs),
-                                                                        ", flop count: ", std::to_string(problem.flopCount()),
-                                                                        ", GFlops: ", std::to_string(problem.flopCount() / (timeEnqsMs.count()) / 1000.0;), "\n"));
+                                   Tensile::Log::WorkflowLogAppendLine(
+                                        "Sync invocation #: ",
+                                        std::to_string(i),
+                                        ", enqs: ", std::to_string(enqs),
+                                        ", flop count: ", std::to_string(problem.flopCount()),
+                                        ", GFlops: ",
+                                        std::to_string(problem.flopCount() / (timeEnqsMs.count()) / 1000.0));
 
                                    if(checkResult){
-                                       Tensile::Client::WorkflowLogAppendLine( "validate result..." );
-                                       Tensile::Client::WorkflowLogAppendLine( concatenate("result: ", ValidateResult(problem) ? "ok" : "fault" ) );
+                                       Tensile::Log::WorkflowLogAppendLine( "validate result..." );
+                                       Tensile::Log::WorkflowLogAppendLine( "result: ", ValidateResult(problem) ? "ok" : "fault" );
                                    }
                                }
 

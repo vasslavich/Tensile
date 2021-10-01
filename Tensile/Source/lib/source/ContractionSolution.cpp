@@ -250,8 +250,8 @@ namespace Tensile
                                                 TypedInputs const&                  inputs,
                                                 Hardware const&                     hardware) const
     {
-        Tensile::Client::WorkflowLogAppendLine(concatenate(
-            "ContractionSolution::generateSingleCall"));
+        Log::WorkflowLogAppendLine(
+            "ContractionSolution::generateSingleCall");
 
         TENSILE_ASSERT_EXC(sizeMapping.workGroupMapping >= 0);
 
