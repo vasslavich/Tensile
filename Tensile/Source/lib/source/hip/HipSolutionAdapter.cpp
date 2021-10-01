@@ -33,6 +33,7 @@
 #include <Tensile/EmbeddedData.hpp>
 #include <Tensile/hip/HipSolutionAdapter.hpp>
 #include <Tensile/hip/HipUtils.hpp>
+#include <Tensile/WorkflowReporter.hpp>
 
 namespace Tensile
 {
@@ -202,7 +203,7 @@ namespace Tensile
                                                  hipEvent_t              startEvent,
                                                  hipEvent_t              stopEvent)
         {
-            Tensile::Client::WorkflowLogAppendLine("launch kernel:base");
+            Log::WorkflowLogAppendLine("launch kernel:base");
 
             if(m_debug)
             {
@@ -236,7 +237,7 @@ namespace Tensile
             if(startEvent != nullptr)
                 HIP_CHECK_RETURN(hipEventRecord(startEvent, stream));
 
-            Tensile::Client::WorkflowLogAppendLine("launch kernel to hip");
+            Log::WorkflowLogAppendLine("launch kernel to hip");
             HIP_CHECK_RETURN(hipExtModuleLaunchKernel(function,
                                                       kernel.numWorkItems.x,
                                                       kernel.numWorkItems.y,
@@ -258,7 +259,7 @@ namespace Tensile
 
         hipError_t SolutionAdapter::launchKernels(std::vector<KernelInvocation> const& kernels)
         {
-            Tensile::Client::WorkflowLogAppendLine("launch kernel:1");
+            Log::WorkflowLogAppendLine("launch kernel:1");
 
             for(auto const& k : kernels)
             {
@@ -272,7 +273,7 @@ namespace Tensile
                                                   hipEvent_t                           startEvent,
                                                   hipEvent_t                           stopEvent)
         {
-            Tensile::Client::WorkflowLogAppendLine("launch kernel:2");
+            Log::WorkflowLogAppendLine("launch kernel:2");
 
             auto first = kernels.begin();
             auto last  = kernels.end() - 1;
@@ -297,7 +298,7 @@ namespace Tensile
                                                   std::vector<hipEvent_t> const&       startEvents,
                                                   std::vector<hipEvent_t> const&       stopEvents)
         {
-            Tensile::Client::WorkflowLogAppendLine("launch kernel:3");
+            Log::WorkflowLogAppendLine("launch kernel:3");
 
             if(kernels.size() != startEvents.size() || kernels.size() != stopEvents.size())
                 throw std::runtime_error(concatenate("Must have an equal number of kernels (",
