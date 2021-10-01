@@ -202,6 +202,8 @@ namespace Tensile
                                                  hipEvent_t              startEvent,
                                                  hipEvent_t              stopEvent)
         {
+            Tensile::Client::WorkflowLogAppendLine("launch kernel:base");
+
             if(m_debug)
             {
                 std::cout << "Kernel " << kernel.kernelName << std::endl;
@@ -233,6 +235,8 @@ namespace Tensile
 
             if(startEvent != nullptr)
                 HIP_CHECK_RETURN(hipEventRecord(startEvent, stream));
+
+            Tensile::Client::WorkflowLogAppendLine("launch kernel to hip");
             HIP_CHECK_RETURN(hipExtModuleLaunchKernel(function,
                                                       kernel.numWorkItems.x,
                                                       kernel.numWorkItems.y,
@@ -254,6 +258,8 @@ namespace Tensile
 
         hipError_t SolutionAdapter::launchKernels(std::vector<KernelInvocation> const& kernels)
         {
+            Tensile::Client::WorkflowLogAppendLine("launch kernel:1");
+
             for(auto const& k : kernels)
             {
                 HIP_CHECK_RETURN(launchKernel(k));
@@ -266,6 +272,8 @@ namespace Tensile
                                                   hipEvent_t                           startEvent,
                                                   hipEvent_t                           stopEvent)
         {
+            Tensile::Client::WorkflowLogAppendLine("launch kernel:2");
+
             auto first = kernels.begin();
             auto last  = kernels.end() - 1;
 
@@ -289,6 +297,8 @@ namespace Tensile
                                                   std::vector<hipEvent_t> const&       startEvents,
                                                   std::vector<hipEvent_t> const&       stopEvents)
         {
+            Tensile::Client::WorkflowLogAppendLine("launch kernel:3");
+
             if(kernels.size() != startEvents.size() || kernels.size() != stopEvents.size())
                 throw std::runtime_error(concatenate("Must have an equal number of kernels (",
                                                      kernels.size(),

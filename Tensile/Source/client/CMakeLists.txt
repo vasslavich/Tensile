@@ -56,3 +56,23 @@ endif()
 foreach(arch IN LISTS TENSILE_GPU_ARCHS)
     target_link_libraries(tensile_client PRIVATE "--amdgpu-target=${arch}")
 endforeach(arch)
+
+
+
+
+add_executable(tensile_client_ext main_ext.cpp)
+set_target_properties(tensile_client_ext
+        PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF)
+
+target_link_libraries(tensile_client_ext PRIVATE TensileHost TensileClient ${Boost_LIBRARIES})
+if(TENSILE_USE_OPENMP)
+    target_link_libraries(tensile_client_ext PRIVATE custom_openmp_cxx)
+endif()
+
+foreach(arch IN LISTS TENSILE_GPU_ARCHS)
+    target_link_libraries(tensile_client_ext PRIVATE "--amdgpu-target=${arch}")
+endforeach(arch)
+

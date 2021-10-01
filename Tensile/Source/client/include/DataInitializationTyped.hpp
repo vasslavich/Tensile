@@ -26,8 +26,8 @@
 
 #pragma once
 
+#include "WorkflowReporter.hpp"
 #include "DataInitialization.hpp"
-
 #include <hip/hip_runtime.h>
 
 #include <Tensile/ContractionProblem.hpp>
@@ -211,6 +211,8 @@ namespace Tensile
                                      TensorDescriptor const&    tensor,
                                      const std::vector<size_t>& batchIdx)
             {
+                Tensile::Client::WorkflowLogAppendLine( "init batched input(GPU): batchIdx=" + std::to_string(batchIdx.size()) );
+
                 std::vector<size_t> batchSizes;
                 std::vector<size_t> batchStrides;
                 for(auto& idx : batchIdx)
@@ -234,6 +236,7 @@ namespace Tensile
                     }
                 }
 
+                Tensile::Client::WorkflowLogAppendLine( "batched input copy to GPU, values=" + std::to_string(count) );
                 HIP_CHECK_EXC(hipMemcpy(array, cpuArray, count * sizeof(T), hipMemcpyHostToDevice));
 
                 std::free(cpuArray);
@@ -242,6 +245,8 @@ namespace Tensile
             void initializeGPUBatchedInputs(ManagedInputs&            inputs,
                                             ContractionProblem const& problem)
             {
+                Tensile::Client::WorkflowLogAppendLine( "initialize batched input(GPU)" );
+
                 if(!inputs.gpu)
                     throw std::runtime_error("Initializing GPU batched inputs");
 
@@ -304,6 +309,8 @@ namespace Tensile
 
                 if(m_keepPristineCopyOnGPU && !m_problemDependentData)
                 {
+                    Tensile::Client::WorkflowLogAppendLine( "make input(GPU): prestine copy on GPU" );
+
                     if(!m_gpuInputsPristine)
                         m_gpuInputsPristine = createNewGPUInputs(problem);
 
@@ -319,6 +326,8 @@ namespace Tensile
                 }
                 else
                 {
+                    Tensile::Client::WorkflowLogAppendLine( "make input(CPU)" );
+
                     if(!m_cpuInputsPristine)
                         m_cpuInputsPristine = createNewCPUInputs(problem);
 
@@ -337,16 +346,23 @@ namespace Tensile
                    && !m_problemDependentData)
                 {
                     if(m_elementsToValidate)
+                    {
+                        Tensile::Client::WorkflowLogAppendLine("copy input(GPU)");
                         copyD(m_gpuInputs, pristine);
+                    }
                 }
                 else
                 {
                     if(!m_gpuInputs)
+                    {
+                        Tensile::Client::WorkflowLogAppendLine("allocate input(GPU)");
                         m_gpuInputs = allocNewGPUInputs(pristine);
+                    }
 
                     if(m_problemDependentData)
                         initializeCPUInputs(*m_cpuInputsPristine, problem);
 
+                    Tensile::Client::WorkflowLogAppendLine( "copy input(GPU)" );
                     copyInputs(m_gpuInputs, pristine, bad, problem);
                 }
 

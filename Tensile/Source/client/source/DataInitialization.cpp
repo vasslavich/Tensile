@@ -220,6 +220,9 @@ namespace Tensile
                                          ClientProblemFactory const& problemFactory,
                                          size_t                      maxWorkspaceSize)
         {
+            Tensile::Client::WorkflowLogAppendLine(
+                concatenate("DataInitialization::GetTyped, TypeInputs=", typeid(TypedDataInitialization<TypedInputs>).name()));
+
             auto* ptr
                 = new TypedDataInitialization<TypedInputs>(args, problemFactory, maxWorkspaceSize);
 
@@ -231,6 +234,8 @@ namespace Tensile
                                     ClientProblemFactory const& problemFactory,
                                     size_t                      maxWorkspaceSize)
         {
+            Tensile::Client::WorkflowLogAppendLine("DataInitialization:args");
+
             auto aType     = args["a-type"].as<DataType>();
             auto bType     = args["b-type"].as<DataType>();
             auto cType     = args["c-type"].as<DataType>();
