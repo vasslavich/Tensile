@@ -5,7 +5,10 @@
 #include <iostream>
 #include "Utils.hpp"
 
-namespace Tensile::Log{
+namespace Tensile{
+namespace Log{
+
+    template<typename Out>
     class WorkflowReporter{
     private:
         static WorkflowReporter _Instance;
@@ -20,10 +23,12 @@ namespace Tensile::Log{
         }
     };
 
-    WorkflowReporter WorkflowReporter::_Instance;
+    template<typename Out>
+    WorkflowReporter<Out> WorkflowReporter<Out>::_Instance;
 
     template<typename ...ToStrItems>
     void WorkflowLogAppendLine(ToStrItems && ... texts){
-        WorkflowReporter::instance().submit_line(concatenate(std::forward<ToStrItems>(texts)...));
+        WorkflowReporter<std::ostringstream>::instance().submit_line(concatenate(std::forward<ToStrItems>(texts)...));
     }
+}
 }

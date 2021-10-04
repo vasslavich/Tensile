@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "WorkflowReporter.hpp"
 #include "DataInitialization.hpp"
 #include <hip/hip_runtime.h>
 

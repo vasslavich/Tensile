@@ -25,6 +25,7 @@
 #include <Tensile/AMDGPU.hpp>
 #include <Tensile/ContractionProblem.hpp>
 #include <Tensile/Utils.hpp>
+#include <Tensile/WorkflowReporter.hpp>
 
 #include <cmath>
 #include <cstddef>

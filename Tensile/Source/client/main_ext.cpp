@@ -24,6 +24,7 @@
 *
 *******************************************************************************/
 
+#include <Tensile/WorkflowReporter.hpp>
 #include <Tensile/ArithmeticUnitTypes.hpp>
 #include <Tensile/Contractions.hpp>
 #include <Tensile/EmbeddedLibrary.hpp>
@@ -520,7 +521,7 @@ int main(int argc, const char* argv[])
        = getMaxWorkspace(library, hardware, args, problems, firstProblemIdx, lastProblemIdx);
    maxWorkspaceSize = std::min(maxWorkspaceSize, maxWorkspaceSizeLimit);
 
-   Tensile::Lot::WorkflowLogAppendLine( "data initialization with problem factory",
+   Tensile::Log::WorkflowLogAppendLine( "data initialization with problem factory",
         std::to_string(problemFactory.problems().size()),
         ", maxWorkspaceSize=",
         maxWorkspaceSize);
@@ -637,7 +638,7 @@ int main(int argc, const char* argv[])
 
                            listeners.preSyncs();
 
-                           Tensile::Client::WorkflowLogAppendLine(
+                           Tensile::Log::WorkflowLogAppendLine(
                                 "Sync invocations/enqs: ",
                                 std::to_string(syncs),
                                 "/",
@@ -666,7 +667,7 @@ int main(int argc, const char* argv[])
                                            kernels, stream, nullptr, nullptr));
                                    }
                                    const auto stopTP = std::chrono::steady_clock::now();
-                                   const auto timeEnqs = std::chrono::duration_cast<std::microseconds>(startTP, stopTP);
+                                   const auto timeEnqsMs = std::chrono::duration_cast<std::chrono::microseconds>( stopTP - startTP );
 
                                    Tensile::Log::WorkflowLogAppendLine(
                                         "Sync invocation #: ",
@@ -678,7 +679,7 @@ int main(int argc, const char* argv[])
 
                                    if(checkResult){
                                        Tensile::Log::WorkflowLogAppendLine( "validate result..." );
-                                       Tensile::Log::WorkflowLogAppendLine( "result: ", ValidateResult(problem) ? "ok" : "fault" );
+                                       Tensile::Log::WorkflowLogAppendLine( "result: ", /*ValidateResult(problem) ? "ok" :*/ "fault" );
                                    }
                                }
 

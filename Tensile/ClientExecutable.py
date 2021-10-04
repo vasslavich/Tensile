@@ -46,7 +46,15 @@ class CMakeEnvironment:
         args = ['make', '-j']
         Common.print2(' '.join(args))
         with Common.ClientExecutionLock():
-            subprocess.check_call(args, cwd=self.buildDir)
+            sp =subprocess.run(args, cwd=self.buildDir,stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+            if sp.stdout is not None:
+                print(sp.stdout)
+
+            if sp.stderr is not None:
+                print(sp.stderr)
+
+            sp.check_returncode()
 
     def builtPath(self, path, *paths):
         return os.path.join(self.buildDir, path, *paths)

@@ -29,11 +29,13 @@
 #include <boost/program_options.hpp>
 
 #include <Tensile/ContractionProblem.hpp>
+#include <Tensile/WorkflowReporter.hpp>
 
 #include "ClientProblemFactory.hpp"
 
 #include <cstddef>
 #include <random>
+#include <type_traits>
 
 #include "RunListener.hpp"
 
@@ -53,8 +55,8 @@ namespace Tensile
             struct RangeGenerator;
 
             template <typename Float>
-                struct IsZero < Float,
-                std::enable_if_t<std::is_floating_point_v<std::decay_t<ElementType>>>
+            struct IsZero < Float,
+                typename std::enable_if<std::is_floating_point<Float>::value>::type>
             {
                 bool operator()(Float v) const noexcept
                 {
@@ -62,9 +64,18 @@ namespace Tensile
                 }
             };
 
+            template<typename Int>
+            struct IsZero<Int,
+                typename std::enable_if<std::is_integral<Int>::value>::type>{
+
+                bool operator()(Int v)const noexcept{
+                    return 0 == v;
+                }
+            };
+
             template <typename ElementType>
-                struct RangeGenerator < ElementType,
-                std::enable_if_t<std::is_floating_point_v<std::decay_t<ElementType>>>
+            struct RangeGenerator< ElementType,
+                typename std::enable_if<std::is_fundamental<ElementType>::value>::type>
             {
                 template <typename ElementFactory>
                 static std::vector<ElementType> make(size_t m, ElementFactory&& elem_factory)
@@ -86,17 +97,18 @@ namespace Tensile
                 }
             };
 
-            template <typename>
+            template <typename, typename = void>
             struct ValueGenerator;
 
             template <typename Float>
-            struct ValueGenerator
+            struct ValueGenerator<Float, 
+                typename std::enable_if<std::is_floating_point<Float>::value>::type>
             {
                 std::random_device                    rd;
                 std::mt19937                          gen;
                 std::uniform_real_distribution<Float> dis;
 
-                value_generator_range_real()
+                ValueGenerator()
                     : gen{rd()}
                 {
                 }
@@ -113,7 +125,32 @@ namespace Tensile
                     do
                     {
                         v = dis(gen);
-                    } while(IsZero<Float>{}.check(v));
+                    } while(IsZero<Float>{}(v));
+
+                    return v;
+                }
+            };
+
+            template<typename Int>
+            struct ValueGenerator<Int,
+                typename std::enable_if<std::is_integral<Int>::value>::type>{
+
+                std::random_device                  rd;
+                std::mt19937                        gen;
+                std::uniform_int_distribution<Int>  dis;
+
+                ValueGenerator() : gen{ rd() }{}
+
+                void set_range(Int from= -1000, Int to = 1000){
+                    std::uniform_int_distribution<Int> d{from, to};
+                    std::swap(dis, d);
+                }
+
+                Int next(){
+                    Int v{};
+                    do{
+                        v = dis(gen);
+                    }while(IsZero<Int>{}(v));
 
                     return v;
                 }
@@ -271,7 +308,7 @@ namespace Tensile
             void initArray(InitMode mode, T* array, size_t elements)
             {
                 Log::WorkflowLogAppendLine(
-                    "1:initArray(", std::to_string(mode), "),size=" + std::to_string(elements));
+                    "1:initArray(", std::to_string((int)mode), "),size=" + std::to_string(elements));
 
                 switch(mode)
                 {
@@ -322,7 +359,7 @@ namespace Tensile
             void initArray(InitMode mode, T* array, TensorDescriptor const& tensor)
             {
                 Log::WorkflowLogAppendLine(
-                    "2:initArray(", std::to_string(mode), " with tenzor),size=" + std::to_string(elements));
+                    "2:initArray(", std::to_string((int)mode), ")");
 
                 switch(mode)
                 {
@@ -389,7 +426,7 @@ namespace Tensile
             void initArray(T* array, size_t elements)
             {
                 Log::WorkflowLogAppendLine(
-                    "3:initArray(", std::to_string(mode), "),size=" + std::to_string(elements));
+                    "3:initArray(", std::to_string((int)Mode), "),size=" + std::to_string(elements));
 
                 for(size_t i = 0; i < elements; i++)
                 {
@@ -401,7 +438,7 @@ namespace Tensile
             void initArray(T* array, TensorDescriptor const& tensor)
             {
                 Log::WorkflowLogAppendLine(
-                    "4:initArray(", std::to_string(mode), ")" );
+                    "4:initArray(", std::to_string((int)Mode), ")" );
 
                 size_t elements = tensor.totalAllocatedElements();
                 initArray<T, Mode>(array, elements);
@@ -609,8 +646,10 @@ namespace Tensile
         template <>
         inline float DataInitialization::getValue<float, InitMode::Random>()
         {
-            static ValueGenerator<float> gen;
-            return static_cast<float>(gen.next() % 201) - 100);
+            static detail::ValueGenerator<int> gen;
+            gen.set_range(0, 201);
+
+            return static_cast<float>((gen.next() % 201) - 100);
         }
 
         template <>
@@ -658,7 +697,9 @@ namespace Tensile
         template <>
         inline double DataInitialization::getValue<double, InitMode::Random>()
         {
-            ValueGenerator<double> gnr;
+            static detail::ValueGenerator<int> gnr;
+            gnr.set_range(0, 2001);
+
             return static_cast<double>((gnr.next() % 2001) - 1000);
         }
 
